@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\stanl\\StudioProjects\\trackkit\\build\\app\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-hi\\values-hi.xml",
+            "outputFile": "C:\\Users\\stanl\\OneDrive\\Desktop\\trackkit\\build\\app\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-hi\\values-hi.xml",
             "map": [
                 {
                     "source": "C:\\Users\\stanl\\.gradle\\caches\\transforms-2\\files-2.1\\d5cbc4584967a18e03313036bcd07885\\jetified-play-services-basement-17.1.0\\res\\values-hi\\values.xml",
