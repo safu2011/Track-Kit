@@ -1,19 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:trackkit/Screens/addnewitem.dart';
 import 'package:trackkit/model/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 import 'login_screen.dart';
 
+final List<String> entries = <String>['A', 'B', 'C'];
+final List<int> colorCodes = <int>[600, 500, 100];
+var lists = [];
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
+
+
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   User? user = FirebaseAuth.instance.currentUser;
+  final database = FirebaseDatabase(
+      databaseURL: "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+      .reference()
+      .child('Location 1');
   UserModel loggedInUser = UserModel();
 
   @override
@@ -32,57 +43,56 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Welcome"),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              SizedBox(
-                height: 150,
-                child: Image.asset("assets/logo.png", fit: BoxFit.contain),
-              ),
-              const Text(
-                "Welcome Back",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text("${loggedInUser.firstName} ${loggedInUser.secondName}",
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
-                  )),
-              Text("${loggedInUser.email}",
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
-                  )),
-              const SizedBox(
-                height: 15,
-              ),
-              ActionChip(
-                  label: const Text("Logout"),
-                  onPressed: () {
-                    logout(context);
-                  }),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  // the logout function
-  Future<void> logout(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()));
+      body: Container(
+        child: Column(
+          children: <Widget>[
+            StreamBuilder(
+              stream: database.onValue,
+              builder: (context, AsyncSnapshot<Event> snapshot) {
+                if (snapshot.hasData && !snapshot.hasError &&
+                    snapshot.data!.snapshot.value != null) {
+                  print("Error on the way");
+                  lists.clear();
+                  DataSnapshot dataValues = snapshot.data!.snapshot;
+                  Map<dynamic, dynamic> values = dataValues.value;
+                  values.forEach((key, values) {
+                    lists.add(values);
+                  });
+                  return  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: lists.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Card(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text("Item: " + lists[index]["Item"].toString()),
+                            Text("Expiry Date: " + lists[index]["Expiry Date"].toString()),
+                            Text("Quantity: " + lists[index]["Quantity"].toString()),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }
+                return Container(child: Text("Add Items"));
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Add Items'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddItem()),
+                );
+              },
+            ),
+          ],
+
+        )
+      ),
+
+    );
   }
 }

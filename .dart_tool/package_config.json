@@ -104,6 +104,18 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "firebase_database",
+      "rootUri": "file:///C:/Users/stanl/OneDrive/Documents/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_database-7.2.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "firebase_database_platform_interface",
+      "rootUri": "file:///C:/Users/stanl/OneDrive/Documents/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_database_platform_interface-0.0.1+1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "flutter",
       "rootUri": "file:///C:/Users/stanl/OneDrive/Documents/flutter/packages/flutter",
       "packageUri": "lib/",
@@ -242,7 +254,7 @@
       "languageVersion": "2.12"
     }
   ],
-  "generated": "2022-01-30T07:44:13.651908Z",
+  "generated": "2022-02-19T09:10:41.668847Z",
   "generator": "pub",
   "generatorVersion": "2.14.4"
 }
