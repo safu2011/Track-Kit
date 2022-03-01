@@ -3,6 +3,7 @@ import 'package:trackkit/LoginSignup/registration_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:trackkit/Screens/MainLocation.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -168,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
             .then((uid) => {
                   Fluttertoast.showToast(msg: "Login Successful"),
                   Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => const HomeScreen())),
+                      MaterialPageRoute(builder: (context) => const MainLocation())),
                 });
       } on FirebaseAuthException catch (error) {
         switch (error.code) {

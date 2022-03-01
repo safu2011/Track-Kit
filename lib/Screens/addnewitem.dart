@@ -30,7 +30,6 @@ class _AddItem extends State<AddItem>{
   @override
   Widget build(BuildContext context){
     // DatabaseReference location = FirebaseDatabase.instance.reference().child("Location 1");
-    final location = database.child('Location 1');
     return Scaffold(
       body:Column(
         children: [
@@ -66,9 +65,10 @@ class _AddItem extends State<AddItem>{
           ElevatedButton(
             child: const Text('Save'),
             onPressed: () async  {
-              //await location.set({'Product Name': productController.text});
-              final productname = database.child('Location 1').child(productController.text);
-              await productname.set({'Quantity': int.parse(quantity.text),'Expiry Date': expiry.text,'Item': productController.text });
+              final DatabaseReference reference = FirebaseDatabase(databaseURL: "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app").reference().child('NTU').child('Location 1');
+              DatabaseReference newRef = reference.push();
+            //  final productname = database.child('NTU').child('Location 1').child(productController.text);
+              await newRef.set({'Quantity': int.parse(quantity.text),'Expiry Date': expiry.text,'Item': productController.text });
             },
           ),
         ],
