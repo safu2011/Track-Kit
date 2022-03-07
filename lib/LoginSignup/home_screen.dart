@@ -9,7 +9,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'login_screen.dart';
 var lists = [];
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  HomeScreen({Key? key, required this.referenceName}) : super(key: key);
+  String referenceName;
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -19,10 +20,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   User? user = FirebaseAuth.instance.currentUser;
-  final database = FirebaseDatabase(
-      databaseURL: "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
-      .reference().child('NTU')
-      .child('Location 1');
   UserModel loggedInUser = UserModel();
 
   @override
@@ -40,6 +37,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final database = FirebaseDatabase(
+        databaseURL: "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+        .reference().child('NTU')
+        .child(widget.referenceName);
     return Scaffold(
 
       body: Container(

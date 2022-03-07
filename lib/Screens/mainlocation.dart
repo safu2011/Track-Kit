@@ -65,7 +65,7 @@ class _MainLocationState extends State<MainLocation> {
                         onTap:(){
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const HomeScreen()),
+                            MaterialPageRoute(builder: (context) => HomeScreen(referenceName: lists[index].id )),
                           );
                         },
                         leading: const SizedBox(
