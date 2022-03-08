@@ -1,6 +1,7 @@
 // ignore: file_names
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:trackkit/LoginSignup/DetailsPage.dart';
+import 'package:trackkit/Screens/addkitscreen.dart';
+import 'package:trackkit/Screens/detailpage.dart';
 import 'package:trackkit/model/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +18,8 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
   final database = FirebaseDatabase(
-          databaseURL:
-              "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+      databaseURL:
+      "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
       .reference()
       .child("NTU");
 
@@ -39,11 +40,9 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF21BFBD),
-      body: ListView(
+      body: Column(
         children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.only(top: 70.0, left: 10.0),
-          ),
+
           const SizedBox(height: 25.0),
           Padding(
             padding: const EdgeInsets.only(left: 40.0),
@@ -104,19 +103,32 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                     return const Text("Add Kits");
                   },
                 ),
+
               ),
             ),
+
+          ),
+          ElevatedButton(
+            child: const Text('Add Items'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddKit()),
+              );
+            },
           ),
         ],
+
+
       ),
     );
   }
 
   Widget _buildItem(
-    String imgPath,
-    String labName,
-    String referenceName,
-  ) {
+      String imgPath,
+      String labName,
+      String referenceName,
+      ) {
     return Padding(
         padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 10.0),
         child: InkWell(
@@ -124,11 +136,11 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => DetailsPage(
-                          heroTag: imgPath,
-                          foodName: labName,
-                          referenceName: referenceName,
-                        )),
+                    builder: (context) => detailsPage(
+                      heroTag: imgPath,
+                      foodName: labName,
+                      referenceName: referenceName,
+                    )),
               );
             },
             child: Row(
@@ -151,9 +163,11 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                                 fontFamily: 'Montserrat',
                                 fontSize: 12.0,
                                 fontWeight: FontWeight.bold)),
-                      ])
+                      ]),
+
                 ]),
               ],
+
             )));
   }
 }

@@ -4,13 +4,16 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:trackkit/model/user_model.dart';
 
-class DetailsPage extends StatefulWidget {
-  DetailsPage(
+import 'addkitscreen.dart';
+import 'addnewitem.dart';
+
+class detailsPage extends StatefulWidget {
+  detailsPage(
       {Key? key,
-      this.heroTag,
-      this.foodName,
-      this.onValueChanged,
-      required this.referenceName})
+        this.heroTag,
+        this.foodName,
+        this.onValueChanged,
+        required this.referenceName})
       : super(key: key);
 
   final heroTag;
@@ -19,10 +22,10 @@ class DetailsPage extends StatefulWidget {
   String referenceName;
 
   @override
-  _DetailsPageState createState() => _DetailsPageState();
+  _detailsPageState createState() => _detailsPageState();
 }
 
-class _DetailsPageState extends State<DetailsPage> {
+class _detailsPageState extends State<detailsPage> {
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
 
@@ -42,8 +45,8 @@ class _DetailsPageState extends State<DetailsPage> {
   @override
   Widget build(BuildContext context) {
     final database = FirebaseDatabase(
-            databaseURL:
-                "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+        databaseURL:
+        "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
         .reference()
         .child('NTU')
         .child(widget.referenceName);
@@ -100,7 +103,8 @@ class _DetailsPageState extends State<DetailsPage> {
                 left: 25.0,
                 right: 25.0,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+
                   children: <Widget>[
                     Text(widget.foodName,
                         style: const TextStyle(
@@ -134,7 +138,7 @@ class _DetailsPageState extends State<DetailsPage> {
                                   final newItem = lists[index];
                                   newItem["Quantity"] = newItem["Quantity"] + 1;
                                   final item =
-                                      Map<String, dynamic>.from(newItem);
+                                  Map<String, dynamic>.from(newItem);
                                   database
                                       .child(lists[index]["referenceName"])
                                       .update(item);
@@ -145,7 +149,7 @@ class _DetailsPageState extends State<DetailsPage> {
                                   if (newItem["Quantity"] == 0) return;
                                   newItem["Quantity"] = newItem["Quantity"] - 1;
                                   final item =
-                                      Map<String, dynamic>.from(newItem);
+                                  Map<String, dynamic>.from(newItem);
                                   database
                                       .child(lists[index]["referenceName"])
                                       .update(item);
@@ -161,36 +165,36 @@ class _DetailsPageState extends State<DetailsPage> {
                                   'assets/Aborbent Gauze.jpeg',
                                   lists[index]["Item"].toString(),
                                   lists[index]["Quantity"],
+                                  lists[index]["Expiry Date"],
                                   onAdd,
                                   onSubtract,
                                   onDelete,
                                 );
-                                // return Card(
-                                //   child: Column(
-                                //     crossAxisAlignment: CrossAxisAlignment.start,
-                                //     children: <Widget>[
-                                //       Text("Item: " + lists[index]["Item"].toString()),
-                                //       Text("Expiry Date: " +
-                                //           lists[index]["Expiry Date"].toString()),
-                                //       Text("Quantity: " +
-                                //           lists[index]["Quantity"].toString()),
-                                //     ],
-                                //   ),
-                                // );
                               },
                             );
                           }
+
                           return const Text("Add Items");
                         },
                       ),
                     ),
+
+                    ElevatedButton(
+                        child: const Text('Add Items'),
+                         onPressed: () {
+                         Navigator.push(
+                           context,
+                        MaterialPageRoute(builder: (context) => AddItem(referenceName: '',)),
+    );
+    },
+    ),
                   ],
                 ))
           ])
         ]));
   }
 
-  Widget _buildItem(String imgPath, String labName, int quantity,
+  Widget _buildItem(String imgPath, String labName, int quantity, String expiry,
       Function onAdd, Function onSubtract, Function onDelete) {
     void _minusNum() {
       onSubtract();
@@ -223,6 +227,14 @@ class _DetailsPageState extends State<DetailsPage> {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(
                     labName,
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    expiry,
                     style: const TextStyle(
                       fontFamily: 'Montserrat',
                       fontSize: 12.0,

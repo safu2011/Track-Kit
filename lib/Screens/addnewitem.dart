@@ -57,7 +57,7 @@ class _AddItem extends State<AddItem> {
                           "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
                   .reference()
                   .child('NTU')
-                  .child(widget.referenceName);
+                  .child('Location 1');
               DatabaseReference newRef = reference.push();
               //  final productname = database.child('NTU').child('Location 1').child(productController.text);
               await newRef.set({

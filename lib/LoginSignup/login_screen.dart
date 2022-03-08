@@ -3,8 +3,7 @@ import 'package:trackkit/LoginSignup/registration_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:trackkit/Screens/MainLocation.dart';
-import 'package:trackkit/Screens/home_screenUI.dart';
+import 'package:trackkit/Screens/mainkits.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
