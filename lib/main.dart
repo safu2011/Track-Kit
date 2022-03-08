@@ -9,27 +9,24 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-
       title: 'Track Kit',
       theme: ThemeData(
         fontFamily: 'Raleway',
         textTheme: Theme.of(context).textTheme.apply(
-          bodyColor: Colors.black,
-          displayColor: Colors.grey[600],
-        ),
+              bodyColor: Colors.black,
+              displayColor: Colors.grey[600],
+            ),
         // This colors the [InputOutlineBorder] when it is selected
         primaryColor: Colors.grey[500],
         textSelectionTheme:
-        TextSelectionThemeData(selectionHandleColor: Colors.green[500]),
+            TextSelectionThemeData(selectionHandleColor: Colors.green[500]),
       ),
       debugShowCheckedModeBanner: false,
       home: const LoginScreen(),
