@@ -1,39 +1,30 @@
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:trackkit/model/user_model.dart';
-import 'package:trackkit/LoginSignup/home_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
-
 
 class AddItem extends StatefulWidget {
-  AddItem({Key? key,required this.referenceName}) : super(key: key);
+  AddItem({Key? key, required this.referenceName}) : super(key: key);
 
   @override
   _AddItem createState() => _AddItem();
   String referenceName;
-
 }
 
-class _AddItem extends State<AddItem>{
-
+class _AddItem extends State<AddItem> {
   TextEditingController productController = TextEditingController();
   TextEditingController quantity = TextEditingController();
   TextEditingController expiry = TextEditingController();
 
-
-  final  database = FirebaseDatabase(databaseURL: "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app").reference();
+  final database = FirebaseDatabase(
+          databaseURL:
+              "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+      .reference();
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     // DatabaseReference location = FirebaseDatabase.instance.reference().child("Location 1");
     return Scaffold(
-      body:Column(
+      body: Column(
         children: [
           TextFormField(
             controller: productController,
@@ -54,29 +45,33 @@ class _AddItem extends State<AddItem>{
               decoration: const InputDecoration(
                 border: UnderlineInputBorder(),
                 labelText: 'Expiration Date',
-
               ),
-              onTap:(){
+              onTap: () {
                 _selectDate(context);
-
-
-              }
-
-          ),
-
+              }),
           ElevatedButton(
             child: const Text('Save'),
-            onPressed: () async  {
-              final DatabaseReference reference = FirebaseDatabase(databaseURL: "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app").reference().child('NTU').child(widget.referenceName);
+            onPressed: () async {
+              final DatabaseReference reference = FirebaseDatabase(
+                      databaseURL:
+                          "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+                  .reference()
+                  .child('NTU')
+                  .child(widget.referenceName);
               DatabaseReference newRef = reference.push();
-            //  final productname = database.child('NTU').child('Location 1').child(productController.text);
-              await newRef.set({'Quantity': int.parse(quantity.text),'Expiry Date': expiry.text,'Item': productController.text });
+              //  final productname = database.child('NTU').child('Location 1').child(productController.text);
+              await newRef.set({
+                'Quantity': int.parse(quantity.text),
+                'Expiry Date': expiry.text,
+                'Item': productController.text
+              });
             },
           ),
         ],
       ),
     );
   }
+
   DateTime selectedDate = DateTime.now();
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -90,15 +85,8 @@ class _AddItem extends State<AddItem>{
         expiry
           ..text = DateFormat.yMMMd().format(selectedDate)
           ..selection = TextSelection.fromPosition(TextPosition(
-              offset: expiry.text.length,
-              affinity: TextAffinity.upstream));
+              offset: expiry.text.length, affinity: TextAffinity.upstream));
       });
     }
   }
-
-
 }
-
-
-
-

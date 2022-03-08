@@ -1,35 +1,65 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:trackkit/model/user_model.dart';
 
 class DetailsPage extends StatefulWidget {
+  DetailsPage(
+      {Key? key,
+      this.heroTag,
+      this.foodName,
+      this.onValueChanged,
+      required this.referenceName})
+      : super(key: key);
+
   final heroTag;
   final foodName;
-  int num;
-  final  onValueChanged;
-
-  DetailsPage({this.heroTag, this.foodName, this.onValueChanged,this.num = 0 });
+  final onValueChanged;
+  String referenceName;
 
   @override
   _DetailsPageState createState() => _DetailsPageState();
 }
 
 class _DetailsPageState extends State<DetailsPage> {
-  // var selectedCard = 'WEIGHT';
+  User? user = FirebaseAuth.instance.currentUser;
+  UserModel loggedInUser = UserModel();
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection("users")
+        .doc(user!.uid)
+        .get()
+        .then((value) {
+      loggedInUser = UserModel.fromMap(value.data());
+      setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final database = FirebaseDatabase(
+            databaseURL:
+                "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+        .reference()
+        .child('NTU')
+        .child(widget.referenceName);
     return Scaffold(
-        backgroundColor: Color(0xFF7A9BEE),
+        backgroundColor: const Color(0xFF7A9BEE),
         appBar: AppBar(
           leading: IconButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
-            icon: Icon(Icons.arrow_back_ios),
+            icon: const Icon(Icons.arrow_back_ios),
             color: Colors.white,
           ),
           backgroundColor: Colors.transparent,
           elevation: 0.0,
-          title: Text('Details',
+          title: const Text('Details',
               style: TextStyle(
                   fontFamily: 'Montserrat',
                   fontSize: 18.0,
@@ -45,7 +75,7 @@ class _DetailsPageState extends State<DetailsPage> {
             Positioned(
                 top: 75.0,
                 child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(45.0),
                           topRight: Radius.circular(45.0),
@@ -73,167 +103,188 @@ class _DetailsPageState extends State<DetailsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(widget.foodName,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 22.0,
                             fontWeight: FontWeight.bold)),
-                    Container(height: 5.0, width: 1.0),
+                    const SizedBox(height: 5.0, width: 1.0),
                     Container(
                       color: Colors.white,
                       height: MediaQuery.of(context).size.height - 300,
-                      child: ListView(
-                          children: [
-                            _buildItem('assets/Aborbent Gauze.jpeg', 'Aborbent Gauze '),
-                            _buildItem('assets/Adhesive Dressings.jpeg', 'Adhesive Dressings.jpeg  '),
-                            _buildItem('assets/Crepe Bandage.jpeg', 'Crepe Bandage.jpeg '),
-                            _buildItem('assets/Disposable Glove Pairs.jpeg', 'Disposable Glove Pairs '),
-                            _buildItem('assets/Disposable Resuscitation Pack.jpeg', 'Disposable Resuscitation Pack '),
-                            _buildItem('assets/Eye Pad.jpeg', 'Eye Pad.jpeg '),
-                            _buildItem('assets/Eye Shield.jpeg', 'Eye Shield '),
-                            _buildItem('assets/Hypoallergenic Tape.jpeg', 'Hypoallergenic Tape '),
-                            _buildItem('assets/Safety Pins.jpeg', 'Safety Pins '),
-                            _buildItem('assets/Scissors.jpeg', 'Scissors '),
-                            _buildItem('assets/Torch Light.jpeg', 'Torch Light '),
-                            _buildItem('assets/Triangular Bandage.jpeg', 'Triangular Bandage '),
+                      child: StreamBuilder(
+                        stream: database.onValue,
+                        builder: (context, AsyncSnapshot<Event> snapshot) {
+                          final lists = [];
+                          if (snapshot.hasData &&
+                              !snapshot.hasError &&
+                              snapshot.data!.snapshot.value != null) {
+                            lists.clear();
+                            DataSnapshot dataValues = snapshot.data!.snapshot;
+                            Map<dynamic, dynamic> values = dataValues.value;
+                            values.forEach((key, values) {
+                              if (key == 'Place') return;
+                              values["referenceName"] = key;
+                              lists.add(values);
+                            });
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: lists.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                void onAdd() {
+                                  final newItem = lists[index];
+                                  newItem["Quantity"] = newItem["Quantity"] + 1;
+                                  final item =
+                                      Map<String, dynamic>.from(newItem);
+                                  database
+                                      .child(lists[index]["referenceName"])
+                                      .update(item);
+                                }
 
-                          ]),
+                                void onSubtract() {
+                                  final newItem = lists[index];
+                                  if (newItem["Quantity"] == 0) return;
+                                  newItem["Quantity"] = newItem["Quantity"] - 1;
+                                  final item =
+                                      Map<String, dynamic>.from(newItem);
+                                  database
+                                      .child(lists[index]["referenceName"])
+                                      .update(item);
+                                }
+
+                                void onDelete() {
+                                  database
+                                      .child(lists[index]["referenceName"])
+                                      .remove();
+                                }
+
+                                return _buildItem(
+                                  'assets/Aborbent Gauze.jpeg',
+                                  lists[index]["Item"].toString(),
+                                  lists[index]["Quantity"],
+                                  onAdd,
+                                  onSubtract,
+                                  onDelete,
+                                );
+                                // return Card(
+                                //   child: Column(
+                                //     crossAxisAlignment: CrossAxisAlignment.start,
+                                //     children: <Widget>[
+                                //       Text("Item: " + lists[index]["Item"].toString()),
+                                //       Text("Expiry Date: " +
+                                //           lists[index]["Expiry Date"].toString()),
+                                //       Text("Quantity: " +
+                                //           lists[index]["Quantity"].toString()),
+                                //     ],
+                                //   ),
+                                // );
+                              },
+                            );
+                          }
+                          return const Text("Add Items");
+                        },
+                      ),
                     ),
-
-
                   ],
-                )
-            )
+                ))
           ])
         ]));
   }
-  Widget _buildItem(String imgPath, String LabName) {
+
+  Widget _buildItem(String imgPath, String labName, int quantity,
+      Function onAdd, Function onSubtract, Function onDelete) {
+    void _minusNum() {
+      onSubtract();
+    }
+
+    void _onAdd() {
+      onAdd();
+    }
+
+    void _onDelete() {
+      onDelete();
+    }
+
     return Padding(
         padding: const EdgeInsets.only(left: 0.0, right: 10, top: 0.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Container(
-                child: Row(
-                    children: [
-                      Hero(
-                          tag: imgPath,
-                          child: Image(
-                              image: AssetImage(imgPath),
-                              fit: BoxFit.cover,
-                              height: 120.0,
-                              width: 130.0
-                          )
-                      ),
-                      const SizedBox(width: 10.0),
-                      Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children:[
-                            Text(
-                              LabName,
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.bold,
+            GestureDetector(
+              onLongPress: _onDelete,
+              child: Row(children: [
+                Hero(
+                    tag: imgPath,
+                    child: Image(
+                        image: AssetImage(imgPath),
+                        fit: BoxFit.cover,
+                        height: 120.0,
+                        width: 130.0)),
+                const SizedBox(width: 10.0),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(
+                    labName,
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Container(
+                    width: 100.0,
+                    height: 30.0,
+                    margin: const EdgeInsets.only(left: 0.0, top: 5.0),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(17.0),
+                        color: const Color(0xFF7A9BEE)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        InkWell(
+                          onTap: _minusNum,
+                          child: Container(
+                            height: 25.0,
+                            width: 25.0,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(7.0),
+                                color: const Color(0xFF7A9BEE)),
+                            child: const Center(
+                              child: Icon(
+                                Icons.remove,
+                                color: Colors.white,
+                                size: 20.0,
                               ),
                             ),
-                            Container(
-                              width: 100.0,
-                              height: 30.0,
-                              margin: const EdgeInsets.only(left: 0.0, top: 5.0),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(17.0),
-                                  color: const Color(0xFF7A9BEE)),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: <Widget>[
-                                  InkWell(
-                                    onTap: _minusNum,
-                                    child: Container(
-                                      height: 25.0,
-                                      width: 25.0,
-                                      decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(7.0),
-                                          color: const Color(0xFF7A9BEE)),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.remove,
-                                          color: Colors.white,
-                                          size: 20.0,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Text(widget.num.toString(),
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'Montserrat',
-                                          fontSize: 15.0)),
-
-                                  InkWell(
-                                    onTap: _addNum,
-                                    child: Container(
-                                      height: 25.0,
-                                      width: 25.0,
-                                      decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(7.0),
-                                          color: Colors.white),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.add,
-                                          color: Color(0xFF7A9BEE),
-                                          size: 20.0,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                          ),
+                        ),
+                        Text(quantity.toString(),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Montserrat',
+                                fontSize: 15.0)),
+                        InkWell(
+                          onTap: _onAdd,
+                          child: Container(
+                            height: 25.0,
+                            width: 25.0,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(7.0),
+                                color: Colors.white),
+                            child: const Center(
+                              child: Icon(
+                                Icons.add,
+                                color: Color(0xFF7A9BEE),
+                                size: 20.0,
                               ),
-                            )
-                          ]
-                      ),
-
-                    ]
-                )
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ]),
+              ]),
             ),
-            //IconButton(
-            //   icon: Icon(Icons.add),
-            //   color: Colors.black,
-            //   onPressed: () {}
-            //)
           ],
-        )
-    );
-  }
-
-
-
-  // selectCard(cardTitle) {
-  //   setState(() {
-  //     selectedCard = cardTitle;
-  //   });
-  // }
-
-  void _minusNum() {
-    if (widget.num == 0) {
-      return;
-    }
-
-    setState(() {
-      widget.num -= 1;
-
-      if (widget.onValueChanged != null) {
-        widget.onValueChanged(widget.num);
-      }
-    });
-  }
-
-  void _addNum() {
-    setState(() {
-      widget.num += 1;
-
-      if (widget.onValueChanged != null) {
-        widget.onValueChanged(widget.num);
-      }
-    });
+        ));
   }
 }
