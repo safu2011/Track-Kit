@@ -5,6 +5,7 @@ import 'package:trackkit/model/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:trackkit/Screens/mainlocation.dart';
 
 import 'login_screen.dart';
 var lists = [];
@@ -56,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     DataSnapshot dataValues = snapshot.data!.snapshot;
                     Map<dynamic, dynamic> values = dataValues.value;
                     values.forEach((key, values) {
+                      if (key == 'Place') return;
                       lists.add(values);
                     });
                     return  ListView.builder(
@@ -83,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AddItem()),
+                    MaterialPageRoute(builder: (context) => AddItem(referenceName: '',)),
                   );
                 },
               ),

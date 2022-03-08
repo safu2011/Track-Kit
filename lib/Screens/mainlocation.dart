@@ -6,6 +6,9 @@ import 'package:trackkit/model/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'dart:convert';
+
+
 
 
 var lists = [];
@@ -53,6 +56,7 @@ class _MainLocationState extends State<MainLocation> {
                 DataSnapshot dataValues = snapshot.data!.snapshot;
                 Map<dynamic, dynamic> values = dataValues.value;
                 values.forEach((key, values) {
+                  values["referenceName"] = key;
                   lists.add(values);
                 });
                 return  ListView.builder(
@@ -63,9 +67,10 @@ class _MainLocationState extends State<MainLocation> {
                       child: ListTile(
                         title: Text("Location: " + lists[index]["Place"].toString()),
                         onTap:(){
+                          print(json.encode(lists[index]));
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => HomeScreen(referenceName: lists[index].id )),
+                            MaterialPageRoute(builder: (context) => HomeScreen(referenceName: lists[index]["referenceName"])),
                           );
                         },
                         leading: const SizedBox(

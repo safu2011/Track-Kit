@@ -12,10 +12,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 
 class AddItem extends StatefulWidget {
-  const AddItem({Key? key}) : super(key: key);
+  AddItem({Key? key,required this.referenceName}) : super(key: key);
 
   @override
   _AddItem createState() => _AddItem();
+  String referenceName;
+
 }
 
 class _AddItem extends State<AddItem>{
@@ -65,7 +67,7 @@ class _AddItem extends State<AddItem>{
           ElevatedButton(
             child: const Text('Save'),
             onPressed: () async  {
-              final DatabaseReference reference = FirebaseDatabase(databaseURL: "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app").reference().child('NTU').child('Location 1');
+              final DatabaseReference reference = FirebaseDatabase(databaseURL: "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app").reference().child('NTU').child(widget.referenceName);
               DatabaseReference newRef = reference.push();
             //  final productname = database.child('NTU').child('Location 1').child(productController.text);
               await newRef.set({'Quantity': int.parse(quantity.text),'Expiry Date': expiry.text,'Item': productController.text });
