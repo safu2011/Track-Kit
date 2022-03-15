@@ -1,4 +1,4 @@
-import 'package:trackkit/LoginSignup/home_screen.dart';
+
 import 'package:trackkit/LoginSignup/registration_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

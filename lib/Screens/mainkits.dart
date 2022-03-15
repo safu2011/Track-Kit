@@ -1,11 +1,14 @@
 // ignore: file_names
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:trackkit/Screens/addkitscreen.dart';
 import 'package:trackkit/Screens/detailpage.dart';
 import 'package:trackkit/model/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+
+import 'flutter_barcode_scanner.dart';
 
 class HomeScreenUI extends StatefulWidget {
   const HomeScreenUI({Key? key}) : super(key: key);
@@ -15,6 +18,36 @@ class HomeScreenUI extends StatefulWidget {
 }
 
 class _HomeScreenUIState extends State<HomeScreenUI> {
+  String _scanBarcode = '';
+  late String barcode;
+
+
+  Future<void> startBarcodeScanStream() async {
+    FlutterBarcodeScanner.getBarcodeStreamReceiver(
+        '#ff6666', 'Cancel', true, ScanMode.BARCODE)!
+        .listen((barcode) => print(barcode));
+  }
+
+  Future<void> scanQR() async {
+    String barcodeScanRes;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+          '#ff6666', 'Cancel', true, ScanMode.QR);
+      print(barcodeScanRes);
+    } on PlatformException {
+      barcodeScanRes = 'Failed to get platform version.';
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      _scanBarcode = barcodeScanRes;
+    });
+  }
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
   final database = FirebaseDatabase(
@@ -87,6 +120,7 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                       Map<dynamic, dynamic> values = dataValues.value;
                       values.forEach((key, values) {
                         values["referenceName"] = key;
+
                         lists.add(values);
                       });
                       return ListView.builder(
@@ -95,7 +129,9 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                         itemBuilder: (BuildContext context, int index) {
                           return _buildItem(
                               'assets/Icon.png',
+                              lists[index]["Lab Name"].toString(),
                               lists[index]["Place"].toString(),
+                              lists[index]["Barcode"].toString(),
                               lists[index]["referenceName"]);
                         },
                       );
@@ -108,14 +144,38 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
             ),
 
           ),
-          ElevatedButton(
-            child: const Text('Add Items'),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddKit()),
-              );
-            },
+
+          ButtonTheme(
+            child: ButtonBar(
+              alignment: MainAxisAlignment.center,
+              children: <Widget>[
+                ElevatedButton(
+                  child: const Text('Add Kit'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddKit()),
+                    );
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text('Scan QR'),
+                  onPressed: () {
+                    scanQR();
+                    barcode = _scanBarcode;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => detailsPage(
+                            referenceName: barcode,
+                          )),
+                    );
+
+                  },
+                ),
+
+              ],
+            ),
           ),
         ],
 
@@ -127,6 +187,8 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
   Widget _buildItem(
       String imgPath,
       String labName,
+      String Labby,
+      String barcode,
       String referenceName,
       ) {
     return Padding(
@@ -138,7 +200,9 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                 MaterialPageRoute(
                     builder: (context) => detailsPage(
                       heroTag: imgPath,
+                      labPlace: Labby,
                       foodName: labName,
+                      barcode: barcode,
                       referenceName: referenceName,
                     )),
               );
@@ -163,6 +227,11 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                                 fontFamily: 'Montserrat',
                                 fontSize: 12.0,
                                 fontWeight: FontWeight.bold)),
+                        Text(Labby,
+                            style: const TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.bold)), 
                       ]),
 
                 ]),

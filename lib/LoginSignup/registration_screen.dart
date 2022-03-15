@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trackkit/model/user_model.dart';
-import 'package:trackkit/LoginSignup/home_screen.dart';
+import 'package:trackkit/Screens/detailpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -296,7 +296,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     Navigator.pushAndRemoveUntil(
         (context),
-        MaterialPageRoute(builder: (context) => HomeScreen(referenceName: '',)),
+        MaterialPageRoute(builder: (context) => detailsPage(referenceName: '',)),
         (route) => false);
   }
 }

@@ -2,24 +2,29 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:trackkit/model/user_model.dart';
-
-import 'addkitscreen.dart';
 import 'addnewitem.dart';
 
 class detailsPage extends StatefulWidget {
   detailsPage(
       {Key? key,
         this.heroTag,
+        this.labPlace,
         this.foodName,
+        this.barcode,
         this.onValueChanged,
         required this.referenceName})
       : super(key: key);
 
   final heroTag;
+  final labPlace;
   final foodName;
+  final barcode;
   final onValueChanged;
   String referenceName;
+
+
 
   @override
   _detailsPageState createState() => _detailsPageState();
@@ -92,7 +97,7 @@ class _detailsPageState extends State<detailsPage> {
                 child: Hero(
                     tag: widget.heroTag,
                     child: Container(
-                        decoration: BoxDecoration(
+                        decoration:  BoxDecoration(
                             image: DecorationImage(
                                 image: AssetImage(widget.heroTag),
                                 fit: BoxFit.cover)),
@@ -127,6 +132,8 @@ class _detailsPageState extends State<detailsPage> {
                             Map<dynamic, dynamic> values = dataValues.value;
                             values.forEach((key, values) {
                               if (key == 'Place') return;
+                              if (key == 'Lab Name') return;
+                              if (key == 'Barcode') return;
                               values["referenceName"] = key;
                               lists.add(values);
                             });
@@ -162,7 +169,8 @@ class _detailsPageState extends State<detailsPage> {
                                 }
 
                                 return _buildItem(
-                                  'assets/Aborbent Gauze.jpeg',
+                                //  'assets/Aborbent Gauze.jpeg',
+                                  lists[index]["Image"],
                                   lists[index]["Item"].toString(),
                                   lists[index]["Quantity"],
                                   lists[index]["Expiry Date"],
@@ -218,8 +226,8 @@ class _detailsPageState extends State<detailsPage> {
               child: Row(children: [
                 Hero(
                     tag: imgPath,
-                    child: Image(
-                        image: AssetImage(imgPath),
+                    child:  Image(
+                        image: NetworkImage(imgPath),
                         fit: BoxFit.cover,
                         height: 120.0,
                         width: 130.0)),
