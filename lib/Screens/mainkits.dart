@@ -21,10 +21,11 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
   String _scanBarcode = '';
   late String barcode = "error";
 
+  var lists = [];
 
   Future<void> startBarcodeScanStream() async {
     FlutterBarcodeScanner.getBarcodeStreamReceiver(
-        '#ff6666', 'Cancel', true, ScanMode.BARCODE)!
+            '#ff6666', 'Cancel', true, ScanMode.BARCODE)!
         .listen((barcode) => print(barcode));
   }
 
@@ -55,14 +56,13 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
     // if (!mounted) return;
-
-
   }
+
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
   final database = FirebaseDatabase(
-      databaseURL:
-      "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+          databaseURL:
+              "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
       .reference()
       .child("NTU");
 
@@ -85,7 +85,6 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
       backgroundColor: const Color(0xFF21BFBD),
       body: Column(
         children: <Widget>[
-
           const SizedBox(height: 25.0),
           Padding(
             padding: const EdgeInsets.only(left: 40.0),
@@ -120,8 +119,9 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                 child: StreamBuilder(
                   stream: database.onValue,
                   builder: (context, AsyncSnapshot<Event> snapshot) {
-                    var lists = [];
-                    if (snapshot.hasData && !snapshot.hasError && snapshot.data!.snapshot.value != null) {
+                    if (snapshot.hasData &&
+                        !snapshot.hasError &&
+                        snapshot.data!.snapshot.value != null) {
                       print("Error on the way");
                       lists.clear();
                       DataSnapshot dataValues = snapshot.data!.snapshot;
@@ -147,12 +147,9 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                     return const Text("Add Kits");
                   },
                 ),
-
               ),
             ),
-
           ),
-
           ButtonTheme(
             child: ButtonBar(
               alignment: MainAxisAlignment.center,
@@ -170,42 +167,52 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                   child: const Text('Scan QR'),
                   onPressed: () {
                     scanQR().then((value) {
-                      if(value){
-                        print("Barcode = $barcode");
+                      if (value) {
+
+                        String imgPath = "";
+                        String labby = "";
+                        String labName = "";
+
+                        for (int i = 0; i < lists.length; i++) {
+                          if (lists[i]["Barcode"].toString() == barcode) {
+                            imgPath = 'assets/Icon.png';
+                            labName = lists[i]["Lab Name"].toString();
+                            labby = lists[i]["Place"].toString();
+                          }
+                        }
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => detailsPage(
-                                referenceName: barcode,
-                              )),
+                                    heroTag: imgPath,
+                                    labPlace: labby,
+                                    foodName: labName,
+                                    barcode: barcode,
+                                    referenceName: barcode,
+                                  )),
                         );
-                      }else{
+                      } else {
                         print("Error ");
                       }
                     });
-                  //  barcode = _scanBarcode;
-
-
                   },
                 ),
-
               ],
             ),
           ),
         ],
-
-
       ),
     );
   }
 
   Widget _buildItem(
-      String imgPath,
-      String labName,
-      String Labby,
-      String barcode,
-      String referenceName,
-      ) {
+    String imgPath,
+    String labName,
+    String Labby,
+    String barcode,
+    String referenceName,
+  ) {
     return Padding(
         padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 10.0),
         child: InkWell(
@@ -214,12 +221,12 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => detailsPage(
-                      heroTag: imgPath,
-                      labPlace: Labby,
-                      foodName: labName,
-                      barcode: barcode,
-                      referenceName: referenceName,
-                    )),
+                          heroTag: imgPath,
+                          labPlace: Labby,
+                          foodName: labName,
+                          barcode: barcode,
+                          referenceName: referenceName,
+                        )),
               );
             },
             child: Row(
@@ -246,12 +253,10 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                             style: const TextStyle(
                                 fontFamily: 'Montserrat',
                                 fontSize: 12.0,
-                                fontWeight: FontWeight.bold)), 
+                                fontWeight: FontWeight.bold)),
                       ]),
-
                 ]),
               ],
-
             )));
   }
 }
