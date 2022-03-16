@@ -91,18 +91,18 @@ class _detailsPageState extends State<detailsPage> {
                         color: Colors.white),
                     height: MediaQuery.of(context).size.height - 100.0,
                     width: MediaQuery.of(context).size.width)),
-            Positioned(
-                top: 0.0,
-                left: (MediaQuery.of(context).size.width / 2) - 50.0,
-                child: Hero(
-                    tag: widget.heroTag,
-                    child: Container(
-                        decoration:  BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage(widget.heroTag),
-                                fit: BoxFit.cover)),
-                        height: 100.0,
-                        width: 100.0))),
+            // Positioned(
+            //     top: 0.0,
+            //     left: (MediaQuery.of(context).size.width / 2) - 50.0,
+            //     child: widget.heroTag==null?Container():Hero(
+            //         tag: widget.heroTag,
+            //         child: Container(
+            //             decoration:  BoxDecoration(
+            //                 image: DecorationImage(
+            //                     image: AssetImage(widget.heroTag),
+            //                     fit: BoxFit.cover)),
+            //             height: 100.0,
+            //             width: 100.0))),
             Positioned(
                 top: 100.0,
                 left: 25.0,
@@ -111,7 +111,7 @@ class _detailsPageState extends State<detailsPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
 
                   children: <Widget>[
-                    Text(widget.foodName,
+                    Text("${widget.foodName}",
                         style: const TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 22.0,

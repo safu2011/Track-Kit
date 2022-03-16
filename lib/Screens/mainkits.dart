@@ -19,7 +19,7 @@ class HomeScreenUI extends StatefulWidget {
 
 class _HomeScreenUIState extends State<HomeScreenUI> {
   String _scanBarcode = '';
-  late String barcode;
+  late String barcode = "error";
 
 
   Future<void> startBarcodeScanStream() async {
@@ -28,25 +28,35 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
         .listen((barcode) => print(barcode));
   }
 
-  Future<void> scanQR() async {
+  Future<bool> scanQR() async {
     String barcodeScanRes;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.QR);
+
+      setState(() {
+        barcode = barcodeScanRes;
+        _scanBarcode = barcodeScanRes;
+      });
       print(barcodeScanRes);
-    } on PlatformException {
+      return true;
+    } catch (e) {
       barcodeScanRes = 'Failed to get platform version.';
+      barcodeScanRes = '$e';
+      setState(() {
+        _scanBarcode = barcodeScanRes;
+      });
+      print("EROR IS = $_scanBarcode");
+      return false;
     }
 
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
-    if (!mounted) return;
+    // if (!mounted) return;
 
-    setState(() {
-      _scanBarcode = barcodeScanRes;
-    });
+
   }
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
@@ -111,9 +121,7 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                   stream: database.onValue,
                   builder: (context, AsyncSnapshot<Event> snapshot) {
                     var lists = [];
-                    if (snapshot.hasData &&
-                        !snapshot.hasError &&
-                        snapshot.data!.snapshot.value != null) {
+                    if (snapshot.hasData && !snapshot.hasError && snapshot.data!.snapshot.value != null) {
                       print("Error on the way");
                       lists.clear();
                       DataSnapshot dataValues = snapshot.data!.snapshot;
@@ -161,15 +169,22 @@ class _HomeScreenUIState extends State<HomeScreenUI> {
                 ElevatedButton(
                   child: const Text('Scan QR'),
                   onPressed: () {
-                    scanQR();
-                    barcode = _scanBarcode;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => detailsPage(
-                            referenceName: barcode,
-                          )),
-                    );
+                    scanQR().then((value) {
+                      if(value){
+                        print("Barcode = $barcode");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => detailsPage(
+                                referenceName: barcode,
+                              )),
+                        );
+                      }else{
+                        print("Error ");
+                      }
+                    });
+                  //  barcode = _scanBarcode;
+
 
                   },
                 ),
