@@ -94,7 +94,7 @@ class _detailsPageState extends State<detailsPage> {
             Positioned(
                 top: 0.0,
                 left: (MediaQuery.of(context).size.width / 2) - 50.0,
-                child: widget.heroTag==null?Container():Hero(
+                child: widget.heroTag == null?Container():Hero(
                     tag: widget.heroTag,
                     child: Container(
                         decoration:  BoxDecoration(
