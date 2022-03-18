@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -58,13 +61,19 @@ class _AddItem extends State<AddItem> {
                   .reference()
                   .child('NTU')
                   .child(widget.referenceName);
+
               DatabaseReference newRef = reference.push();
               //  final productname = database.child('NTU').child('Location 1').child(productController.text);
-              await newRef.set({
-                'Quantity': int.parse(quantity.text),
-                'Expiry Date': expiry.text,
-                'Item': productController.text
+
+              uploadPic(new File("")).then((imageUrl) async {
+                await newRef.set({
+                  'Quantity': int.parse(quantity.text),
+                  'Expiry Date': expiry.text,
+                  'Item': productController.text,
+                  'Image' : imageUrl
+                });
               });
+
             },
           ),
         ],
@@ -73,6 +82,7 @@ class _AddItem extends State<AddItem> {
   }
 
   DateTime selectedDate = DateTime.now();
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
         context: context,
@@ -88,5 +98,17 @@ class _AddItem extends State<AddItem> {
               offset: expiry.text.length, affinity: TextAffinity.upstream));
       });
     }
+  }
+
+  Future<String> uploadPic(File capturedImageFile) async {
+
+    final UploadTask uploadTask = FirebaseStorage.instance
+        .ref()
+        .putFile(capturedImageFile);
+    TaskSnapshot taskSnapshot = await uploadTask;
+
+    String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+    return downloadUrl;
+
   }
 }
