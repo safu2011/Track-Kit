@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class AddItem extends StatefulWidget {
@@ -14,6 +16,7 @@ class AddItem extends StatefulWidget {
 }
 
 class _AddItem extends State<AddItem> {
+  File imageFile = File("");
   TextEditingController productController = TextEditingController();
   TextEditingController quantity = TextEditingController();
   TextEditingController expiry = TextEditingController();
@@ -27,58 +30,128 @@ class _AddItem extends State<AddItem> {
   Widget build(BuildContext context) {
     // DatabaseReference location = FirebaseDatabase.instance.reference().child("Location 1");
     return Scaffold(
-      body: Column(
-        children: [
-          TextFormField(
-            controller: productController,
-            decoration: const InputDecoration(
-              border: UnderlineInputBorder(),
-              labelText: 'Product name',
+      body: SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: productController,
+                  decoration: const InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Product name',
+                  ),
+                ),
+                TextFormField(
+                  controller: quantity,
+                  decoration: const InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Quantity',
+                  ),
+                ),
+                TextFormField(
+                    controller: expiry,
+                    decoration: const InputDecoration(
+                      border: UnderlineInputBorder(),
+                      labelText: 'Expiration Date',
+                    ),
+                    onTap: () {
+                      _selectDate(context);
+                    }),
+                Center(
+                  child: ElevatedButton(
+                    child: const Text('Add Image'),
+                    onPressed: () async {
+                      _showChoiceDialog(context);
+                    },
+                  ),
+                ),
+                imageFile.path == ""
+                    ? Center(child: Text(""))
+                    : Container(
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        height: MediaQuery.of(context).size.height * 0.4,
+                        child: Image.file(imageFile, fit: BoxFit.fill)),
+                ElevatedButton(
+                  child: const Text('Save'),
+                  onPressed: () async {
+                    EasyLoading.show(status: 'Saving please wait...');
+                    final DatabaseReference reference = FirebaseDatabase(
+                            databaseURL:
+                                "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
+                        .reference()
+                        .child('NTU')
+                        .child(widget.referenceName);
+                    DatabaseReference newRef = reference.push();
+                    //  final productname = database.child('NTU').child('Location 1').child(productController.text);
+
+                    uploadPic(newRef.key).then((imageUrl) async {
+                      await newRef.set({
+                        'Quantity': int.parse(quantity.text),
+                        'Expiry Date': expiry.text,
+                        'Item': productController.text,
+                        'Image': imageUrl
+                      });
+                      EasyLoading.dismiss();
+                      Navigator.pop(context);
+                    });
+                  },
+                ),
+              ],
             ),
           ),
-          TextFormField(
-            controller: quantity,
-            decoration: const InputDecoration(
-              border: UnderlineInputBorder(),
-              labelText: 'Quantity',
-            ),
-          ),
-          TextFormField(
-              controller: expiry,
-              decoration: const InputDecoration(
-                border: UnderlineInputBorder(),
-                labelText: 'Expiration Date',
-              ),
-              onTap: () {
-                _selectDate(context);
-              }),
-          ElevatedButton(
-            child: const Text('Save'),
-            onPressed: () async {
-              final DatabaseReference reference = FirebaseDatabase(
-                      databaseURL:
-                          "https://trackkit-a5cf3-default-rtdb.asia-southeast1.firebasedatabase.app")
-                  .reference()
-                  .child('NTU')
-                  .child(widget.referenceName);
-
-              DatabaseReference newRef = reference.push();
-              //  final productname = database.child('NTU').child('Location 1').child(productController.text);
-
-              uploadPic(new File("")).then((imageUrl) async {
-                await newRef.set({
-                  'Quantity': int.parse(quantity.text),
-                  'Expiry Date': expiry.text,
-                  'Item': productController.text,
-                  'Image' : imageUrl
-                });
-              });
-
-            },
-          ),
-        ],
+        ),
       ),
     );
+  }
+
+  Future<void> _showChoiceDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(
+              "Choose option",
+              style: TextStyle(color: Colors.blue),
+            ),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  const Divider(
+                    height: 1,
+                    color: Colors.blue,
+                  ),
+                  ListTile(
+                    onTap: () {
+                      _openGallery(context);
+                    },
+                    title: const Text("Gallery"),
+                    leading: const Icon(
+                      Icons.account_box,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const Divider(
+                    height: 1,
+                    color: Colors.blue,
+                  ),
+                  ListTile(
+                    onTap: () {
+                      _openCamera(context);
+                    },
+                    title: const Text("Camera"),
+                    leading: const Icon(
+                      Icons.camera,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   DateTime selectedDate = DateTime.now();
@@ -100,15 +173,36 @@ class _AddItem extends State<AddItem> {
     }
   }
 
-  Future<String> uploadPic(File capturedImageFile) async {
+  void _openGallery(BuildContext context) async {
+    final pickedFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+    );
+    setState(() {
+      imageFile = File(pickedFile!.path);
+    });
 
+    Navigator.pop(context);
+  }
+
+  void _openCamera(BuildContext context) async {
+    final pickedFile = await ImagePicker().getImage(
+      source: ImageSource.camera,
+    );
+    setState(() {
+      imageFile = File(pickedFile!.path);
+    });
+    Navigator.pop(context);
+  }
+
+  Future<String> uploadPic(String newRef) async {
+    print("File path = ${imageFile.path}");
     final UploadTask uploadTask = FirebaseStorage.instance
         .ref()
-        .putFile(capturedImageFile);
+        .child("${widget.referenceName}/$newRef")
+        .putFile(File(imageFile.path));
     TaskSnapshot taskSnapshot = await uploadTask;
 
     String downloadUrl = await taskSnapshot.ref.getDownloadURL();
     return downloadUrl;
-
   }
 }

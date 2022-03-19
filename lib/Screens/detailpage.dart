@@ -192,7 +192,7 @@ class _detailsPageState extends State<detailsPage> {
                          onPressed: () {
                          Navigator.push(
                            context,
-                        MaterialPageRoute(builder: (context) => AddItem(referenceName: '',)),
+                        MaterialPageRoute(builder: (context) => AddItem(referenceName: widget.referenceName,)),
     );
     },
     ),
