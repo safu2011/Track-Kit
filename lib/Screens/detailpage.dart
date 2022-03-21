@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:trackkit/model/user_model.dart';
 import 'addnewitem.dart';
 
@@ -34,9 +38,19 @@ class _detailsPageState extends State<detailsPage> {
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
 
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  AndroidNotificationChannel channel = const AndroidNotificationChannel(
+    'high_importance_channel', // id
+    'High Importance Notifications',
+    importance: Importance.high,
+  );
+
   @override
   void initState() {
     super.initState();
+
+    _requestPermissions();
+
     FirebaseFirestore.instance
         .collection("users")
         .doc(user!.uid)
@@ -167,6 +181,9 @@ class _detailsPageState extends State<detailsPage> {
                                       .child(lists[index]["referenceName"])
                                       .remove();
                                 }
+
+                                print("Data = ${lists[index]["Quantity"]}");
+
 
                                 return _buildItem(
                                 //  'assets/Aborbent Gauze.jpeg',
@@ -306,5 +323,151 @@ class _detailsPageState extends State<detailsPage> {
             ),
           ],
         ));
+  }
+
+  Future<void> _showNotificationWithNoTitle(int notificationId, String body) async {
+    print("Data notificationId= ${notificationId}");
+    flutterLocalNotificationsPlugin.show(
+        notificationId,
+        "${widget.foodName}",
+        "$body needs attention",
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            channel.id,
+            channel.name,
+            icon: 'launch_background',
+          ),
+        ));
+  }
+
+  Future<void> setNotification() async {
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+    FirebaseDatabase.instance
+        .reference()
+        .child('NTU')
+        .child(widget.referenceName)
+        .once()
+        .then((snapShot) {
+      Map<dynamic, dynamic> values = snapShot.value;
+
+      var tempList = [];
+
+     // print("DATA = ${snapShot.value}");
+
+      snapShot.value.forEach((key, value) {
+        // if (key == 'Place') return;
+        // if (key == 'Lab Name') return;
+        // if (key == 'Barcode') return;
+        // values["referenceName"] = key;
+        tempList.add(value);
+      });
+
+      int counter = 1;
+      for(var databaseData in tempList){
+        try{
+          checkItem(counter, databaseData);
+          counter++;
+        }catch(e){
+          print("Error = $e");
+        }
+
+      }
+    });
+  }
+
+  checkItem(int id, var data){
+    //["Item"].toString()
+    String date = data["Expiry Date"].toString();
+    String dateAndMonth = date.split(",")[0];
+
+    int month = getMonthValue(dateAndMonth);
+    int day = int.parse(dateAndMonth.split(" ")[1]);
+    int year = int.parse(date.split(",")[1]);
+    print("Date is = $year $month $day");
+
+    final birthday = DateTime(year, month, day);
+    final date2 = DateTime.now();
+
+    final expiresIn = date2.difference(birthday).inDays;
+    print(" expiresIn = $expiresIn");
+    print(" expiresIn = ${expiresIn>-90}");
+
+
+
+    if(data["Quantity"] < 90 || expiresIn>-90){
+      flutterLocalNotificationsPlugin.show(
+        id,
+          "${widget.foodName}",
+          "${data['Item']} need attention",
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              icon: 'launch_background',
+            ),
+          ));
+    }
+  }
+
+
+  void _requestPermissions() {
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        MacOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    setNotification();
+
+  }
+
+  int getMonthValue(String date) {
+    int month;
+    String data = date.split(" ")[0];
+    if(data == "Jan"){
+      month = 01;
+    }else if(data == "Feb"){
+      month = 02;
+    }else if(data == "Mar"){
+      month = 03;
+    }else if(data == "Apr"){
+      month = 04;
+    }else if(data == "May"){
+      month = 05;
+    }else if(data == "Jun"){
+      month = 06;
+    }else if(data == "Jul"){
+      month = 07;
+    }else if(data == "Aug"){
+      month = 08;
+    }else if(data == "Sep"){
+      month = 09;
+    }else if(data == "Oct"){
+      month = 10;
+    }else if(data == "Nov"){
+      month = 11;
+    }else if(data == "Dec"){
+      month = 12;
+    }else{
+      month = 01;
+    }
+    return month;
   }
 }
